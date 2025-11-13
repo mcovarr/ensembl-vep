@@ -139,8 +139,7 @@ RUN apt-get update && apt-get -y install \
 # Setup VEP environment
 ENV OPT=/opt/vep
 ENV OPT_SRC=$OPT/src
-ENV LOFTEE_VERSION=1.0.4_GRCh38
-ENV LOFTEE_DIR=loftee-${LOFTEE_VERSION}
+ENV LOFTEE_DIR=loftee-1.0.4_GRCh38
 ENV PERL5LIB_TMP=$OPT_SRC/${LOFTEE_DIR}:$OPT_SRC/ensembl-vep:$OPT_SRC/ensembl-vep/modules:/plugins
 ENV PERL5LIB=$PERL5LIB_TMP:$OPT_SRC/bioperl-live
 ENV KENT_SRC=$OPT/src/kent-335_base/src
