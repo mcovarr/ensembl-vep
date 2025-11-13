@@ -186,7 +186,7 @@ RUN export MACHTYPE=$(uname -m) &&\
     # Configure "locale", see https://github.com/rocker-org/rocker/issues/19
     echo "$LANG_VAR UTF-8" >> /etc/locale.gen && locale-gen en_US.utf8 && \
     /usr/sbin/update-locale LANG=$LANG_VAR && \
-    # Copy htslib executables. It also requires the packages 'zlib1g-dev', 'libbz2-dev' and 'liblzma-dev' \
+    # Copy htslib executables. It also requires the packages 'zlib1g-dev', 'libbz2-dev' and 'liblzma-dev'
     cp $HTSLIB_DIR/bgzip $HTSLIB_DIR/tabix $HTSLIB_DIR/htsfile /usr/local/bin/ && \
     # additional perl module for loftee
     cpanm DBD::SQLite && \
