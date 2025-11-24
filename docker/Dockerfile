@@ -17,17 +17,36 @@ RUN apt-get update && apt-get -y install \
     perl \
     perl-base \
     unzip \
-    wget && \
+    wget \
+    curl \
+    libncurses5-dev \
+    libncursesw5-dev \
+    libcurl4-openssl-dev && \
     rm -rf /var/lib/apt/lists/*
 
 # Setup VEP environment
 ENV OPT=/opt/vep
 ENV OPT_SRC=$OPT/src
 ENV HTSLIB_DIR=$OPT_SRC/htslib
+ENV SAMTOOLS_DIR=$OPT_SRC/samtools
+ENV HTS_VERSION=1.9
 ARG BRANCH
+
+# samtools
+WORKDIR /tmp
+RUN wget -q https://github.com/samtools/samtools/releases/download/$HTS_VERSION/samtools-$HTS_VERSION.tar.bz2 -O samtools-$HTS_VERSION.tar.bz2 && \
+    tar -xjf samtools-$HTS_VERSION.tar.bz2
+WORKDIR /tmp/samtools-$HTS_VERSION
+RUN ./configure --prefix=$SAMTOOLS_DIR && make && make install && rm -r Makefile *.c
 
 # Working directory
 WORKDIR $OPT_SRC
+
+# loftee
+ENV LOFTEE_ZIP=v1.0.4_GRCh38.zip
+RUN wget -q https://github.com/konradjk/loftee/archive/refs/tags/${LOFTEE_ZIP} && \
+    unzip ${LOFTEE_ZIP} && \
+    rm ${LOFTEE_ZIP}
 
 # Add ensembl-vep files from current context
 ADD . ensembl-vep
@@ -120,12 +139,13 @@ RUN apt-get update && apt-get -y install \
 # Setup VEP environment
 ENV OPT=/opt/vep
 ENV OPT_SRC=$OPT/src
-ENV PERL5LIB_TMP=$PERL5LIB:$OPT_SRC/ensembl-vep:$OPT_SRC/ensembl-vep/modules:/plugins
+ENV LOFTEE_PATH=$OPT_SRC/loftee-1.0.4_GRCh38
+ENV PERL5LIB_TMP=${LOFTEE_PATH}:$OPT_SRC/ensembl-vep:$OPT_SRC/ensembl-vep/modules:/plugins
 ENV PERL5LIB=$PERL5LIB_TMP:$OPT_SRC/bioperl-live
 ENV KENT_SRC=$OPT/src/kent-335_base/src
 ENV HTSLIB_DIR=$OPT_SRC/htslib
 ENV DEPS=$OPT_SRC
-ENV PATH=$OPT_SRC/ensembl-vep:$OPT_SRC/var_c_code:$PATH
+ENV PATH=$OPT_SRC/samtools/bin:$OPT_SRC/ensembl-vep:$OPT_SRC/var_c_code:$PATH
 ENV LANG_VAR=en_US.UTF-8
 ARG BRANCH
 
@@ -167,6 +187,8 @@ RUN export MACHTYPE=$(uname -m) &&\
     /usr/sbin/update-locale LANG=$LANG_VAR && \
     # Copy htslib executables. It also requires the packages 'zlib1g-dev', 'libbz2-dev' and 'liblzma-dev'
     cp $HTSLIB_DIR/bgzip $HTSLIB_DIR/tabix $HTSLIB_DIR/htsfile /usr/local/bin/ && \
+    # additional perl module for loftee
+    cpanm DBD::SQLite && \
     # Remove CPAN cache
     rm -rf /root/.cpanm
 
